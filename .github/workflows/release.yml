@@ -1,0 +1,140 @@
+---
+# SPDX-FileCopyrightText: 2026 IMAGIN sp. z o.o.
+# SPDX-FileContributor: Marcin Engelmann <mengelmann@octivi.com>
+# SPDX-License-Identifier: Apache-2.0
+#
+# Part of Octivi's hardened-calico, a derivative of Rancher's hardened-calico
+# image: https://github.com/octivi/hardened-calico
+#
+# Created by Octivi's DevOps team: https://octivi.com/devops
+name: Publish
+
+# yamllint disable-line rule:quoted-strings
+'on':
+  push:
+    tags:
+      - v*-octivi.*
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: ${{ github.repository }}-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  tests:
+    name: Run tests
+    if: github.repository == 'octivi/hardened-calico'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/tests.yml
+
+  publish:
+    name: Build and publish container image
+    needs: tests
+    if: github.repository == 'octivi/hardened-calico'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out release commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Load pinned versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Ev '^[[:space:]]*(#|$)' versions.env >> "${GITHUB_ENV}"
+
+      - name: Validate configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          make validate
+
+          if [[ "${GITHUB_EVENT_NAME}" == "push" && \
+              "${GITHUB_REF_NAME}" != "${IMAGE_TAG}" ]]; then
+            echo "Git tag does not match IMAGE_TAG=${IMAGE_TAG}" >&2
+            exit 1
+          fi
+
+      - name: Download k3s-root
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .build
+          gh release download "${K3S_ROOT_RELEASE}" \
+            --repo "${K3S_ROOT_REPOSITORY}" \
+            --pattern k3s-root-amd64.tar \
+            --dir .build \
+            --clobber
+
+      - name: Verify k3s-root checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' \
+            "${K3S_ROOT_SHA256}" \
+            '.build/k3s-root-amd64.tar' | \
+            sha256sum --check -
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+
+      - name: Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Build and publish container image
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          base_image="${CALICO_IMAGE}:${CALICO_TAG}@${CALICO_DIGEST}"
+          target_image="ghcr.io/octivi/hardened-calico:${IMAGE_TAG}"
+
+          docker buildx build \
+            --platform linux/amd64 \
+            --pull \
+            --build-arg "BASE_IMAGE=${base_image}" \
+            --build-arg "NFTABLES_VERSION=${NFTABLES_VERSION}" \
+            --build-arg "VCS_REF=${GITHUB_SHA}" \
+            --label "org.opencontainers.image.version=${IMAGE_TAG}" \
+            --tag "${target_image}" \
+            --cache-from type=gha \
+            --cache-to type=gha,mode=max \
+            --provenance=mode=max \
+            --sbom=true \
+            --push \
+            .
+
+      - name: Add immutable commit tag
+        env:
+          COMMIT_SHA: ${{ github.sha }}
+          VERSION: ${{ env.IMAGE_TAG }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          commit_tag="sha-${COMMIT_SHA:0:12}"
+          docker buildx imagetools create \
+            --tag "ghcr.io/octivi/hardened-calico:${commit_tag}" \
+            "ghcr.io/octivi/hardened-calico:${VERSION}"
+
+      - name: Inspect published image
+        env:
+          VERSION: ${{ env.IMAGE_TAG }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker buildx imagetools inspect \
+            "ghcr.io/octivi/hardened-calico:${VERSION}"

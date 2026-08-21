@@ -1,0 +1,103 @@
+---
+# SPDX-FileCopyrightText: 2026 IMAGIN sp. z o.o.
+# SPDX-FileContributor: Marcin Engelmann <mengelmann@octivi.com>
+# SPDX-License-Identifier: Apache-2.0
+#
+# Part of Octivi's hardened-calico, a derivative of Rancher's hardened-calico
+# image: https://github.com/octivi/hardened-calico
+#
+# Created by Octivi's DevOps team: https://octivi.com/devops
+name: Tests
+
+# yamllint disable-line rule:quoted-strings
+'on':
+  push:
+    branches:
+      - '**'
+    # release.yml handles release tags and calls this reusable
+    # workflow, so ignore them here to avoid running the same tests twice.
+    tags-ignore:
+      - v*-octivi.*
+  pull_request:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # A reusable workflow resolves github.workflow to the caller's name. Using it
+  # here would share the caller's concurrency group and cancel the caller.
+  group: ${{ github.repository }}-${{ github.workflow }}-${{ github.ref }}-tests
+  cancel-in-progress: true
+
+jobs:
+  # Push already tests branches from this repository. Skip pull request jobs
+  # for those branches to avoid testing the same commit twice; pull requests
+  # from forks have no push run in this repository and must still run here.
+  configuration:
+    name: Validate pinned configuration
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-slim
+    timeout-minutes: 3
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Validate pinned configuration
+        run: make validate
+
+  shellcheck:
+    name: Validate shell scripts
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-slim
+    timeout-minutes: 3
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run ShellCheck
+        run: tests/test_shell
+
+  yamllint:
+    name: Validate yaml files
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name != github.repository
+    # ubuntu-slim does not include yamllint, whereas ubuntu-latest does.
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run yamllint
+        run: tests/test_yaml
+
+  hadolint:
+    name: Validate Dockerfile
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run Hadolint
+        uses: hadolint/hadolint-action@2a66e89f53d0771bb131a7fa31f3136336094aa6 # v3.4.0
+        with:
+          dockerfile: Dockerfile

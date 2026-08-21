@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: 2026 IMAGIN sp. z o.o.
+# SPDX-FileContributor: Marcin Engelmann <mengelmann@octivi.com>
+# SPDX-License-Identifier: Apache-2.0
+#
+# Part of Octivi's hardened-calico, a derivative of Rancher's hardened-calico
+# image: https://github.com/octivi/hardened-calico
+#
+# Created by Octivi's DevOps team: https://octivi.com/devops
+
+**
+
+!Dockerfile
+!.build/
+!.build/k3s-root-amd64.tar

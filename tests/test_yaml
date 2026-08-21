@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2019-2026 IMAGIN sp. z o.o.
+# SPDX-FileContributor: Marcin Engelmann <mengelmann@octivi.com>
+# SPDX-License-Identifier: Apache-2.0
+#
+# Part of Opinionated Komodo platform by Octivi https://octivi.com/
+# Developed by Octivi's DevOps team https://octivi.com/devops
+#
+# ./tests/test_yaml
+
+# >>> OBB:BEGIN variant=header source=local version=local
+################################################################################
+# Octivi Bash Boilerplate (OBB) Header
+# Part of Octivi Bash Boilerplate https://github.com/octivi/bash-boilerplate
+################################################################################
+# Unofficial Bash "Strict Mode"
+# http://redsymbol.net/articles/unofficial-bash-strict-mode/
+set -o errexit -o nounset -o pipefail
+# Define common constants regardless if they are used in the script
+__my_name="$(basename "${BASH_SOURCE[0]}")"
+readonly __my_name
+__my_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly __my_dir
+__my_path="${__my_dir}/${__my_name}"
+# shellcheck disable=SC2034
+readonly __my_path
+__my_args="$*"
+# shellcheck disable=SC2034
+readonly __my_args
+# Set IFS to just newline and tab
+IFS=$'\n\t'
+################################################################################
+# <<< OBB:END
+
+if [[ $# -eq 0 ]]; then
+  set -- .
+fi
+
+yamllint --version
+echo
+exec yamllint "$@"
