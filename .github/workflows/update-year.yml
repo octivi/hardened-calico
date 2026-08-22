@@ -17,9 +17,9 @@
 # Cron in Actions may be delayed (does not guarantee execution to the minute).
 name: Update year in headers & create a PR
 
-on:
+'on':
   schedule:
-    - cron: '15 2 6 1 *' # Jan 6th, 02:15 UTC
+    - cron: 15 2 6 1 * # Jan 6th, 02:15 UTC
   workflow_dispatch:
 
 permissions:
@@ -41,7 +41,7 @@ jobs:
       - name: Update year in headers
         uses: octivi/update-copyright-year@917698cb460348d86319d55556dc873626bac1d1 # v1.3.0
         with:
-          organization_regexp: "IMAGIN [sS]p\\. z o\\.o\\."
+          organization_regexp: IMAGIN [sS]p\. z o\.o\.
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
