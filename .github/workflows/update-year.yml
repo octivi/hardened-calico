@@ -1,0 +1,57 @@
+---
+# SPDX-FileCopyrightText: 2026 IMAGIN sp. z o.o.
+# SPDX-FileContributor: Marcin Engelmann <mengelmann@octivi.com>
+# SPDX-License-Identifier: Apache-2.0
+#
+# Part of Octivi's hardened-calico, a derivative of Rancher's hardened-calico
+# image: https://github.com/octivi/hardened-calico
+#
+# Created by Octivi's DevOps team: https://octivi.com/devops
+#
+# Be sure to enable "Allow GitHub Actions to create and approve pull requests" in
+# the repository settings under "Actions" -> "General".
+#
+# In a public repository, if there is no activity for 60 days, GitHub may
+# automatically disable on: schedule execution.
+#
+# Cron in Actions may be delayed (does not guarantee execution to the minute).
+name: Update year in headers & create a PR
+
+on:
+  schedule:
+    - cron: '15 2 6 1 *' # Jan 6th, 02:15 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: update-year-in-headers
+  cancel-in-progress: true
+
+jobs:
+  update-year:
+    name: Update year in headers
+    runs-on: ubuntu-slim
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Update year in headers
+        uses: octivi/update-copyright-year@917698cb460348d86319d55556dc873626bac1d1 # v1.3.0
+        with:
+          organization_regexp: "IMAGIN [sS]p\\. z o\\.o\\."
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          branch: update-year-in-headers
+          delete-branch: true
+          commit-message: 'chore: update year in headers'
+          title: Update year in headers
+          body: |
+            Automated update of year in headers.
+          labels: |
+            automation
+            maintenance
