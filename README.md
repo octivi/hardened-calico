@@ -1,6 +1,5 @@
 # hardened-calico
 
-[![GitHub Releases](https://img.shields.io/github/v/release/octivi/hardened-calico?sort=semver)](https://github.com/octivi/hardened-calico/releases)
 [![License: Apache 2.0](https://img.shields.io/github/license/octivi/hardened-calico)](https://choosealicense.com/licenses/apache-2.0/)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org/)
 [![Semantic Versioning](https://img.shields.io/badge/SemVer-2.0.0-blue)](https://semver.org/spec/v2.0.0.html)
