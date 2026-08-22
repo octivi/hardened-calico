@@ -5,9 +5,10 @@
 [![Semantic Versioning](https://img.shields.io/badge/SemVer-2.0.0-blue)](https://semver.org/spec/v2.0.0.html)
 
 > [!IMPORTANT]
-> This image exists because `nft` 1.1.1 from the original `hardened-calico` image can segfault
+> This image exists because `nft` 1.1.0 from the original `hardened-calico` image can segfault
 > while reading nftables rules created by `nft` 1.1.3 on a Debian 13 "trixie" host. See the
-> related [Istio issue #58492](https://github.com/istio/istio/issues/58492),
+> [nftables userspace compatibility matrix](https://gist.github.com/aojea/c17a8bbf40d98c3f59c8ed2712ec43a0)
+> and the related [Istio issue #58492](https://github.com/istio/istio/issues/58492),
 > [Debian bug #1129273](https://bugs.debian.org/1129273), and
 > [Ubuntu bug #2142552](https://bugs.launchpad.net/bugs/2142552).
 
