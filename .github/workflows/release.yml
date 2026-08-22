@@ -95,13 +95,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
+      - name: Log in to Docker Hub
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Build and publish container image
         shell: bash
         run: |
           set -euo pipefail
 
           base_image="${CALICO_IMAGE}:${CALICO_TAG}@${CALICO_DIGEST}"
-          target_image="ghcr.io/octivi/hardened-calico:${IMAGE_TAG}"
+          ghcr_image="ghcr.io/octivi/hardened-calico:${IMAGE_TAG}"
+          dockerhub_image="octivi/hardened-calico:${IMAGE_TAG}"
 
           docker buildx build \
             --platform linux/amd64 \
@@ -110,7 +117,8 @@ jobs:
             --build-arg "NFTABLES_VERSION=${NFTABLES_VERSION}" \
             --build-arg "VCS_REF=${GITHUB_SHA}" \
             --label "org.opencontainers.image.version=${IMAGE_TAG}" \
-            --tag "${target_image}" \
+            --tag "${ghcr_image}" \
+            --tag "${dockerhub_image}" \
             --cache-from type=gha \
             --cache-to type=gha,mode=max \
             --provenance=mode=max \
@@ -129,6 +137,9 @@ jobs:
           docker buildx imagetools create \
             --tag "ghcr.io/octivi/hardened-calico:${commit_tag}" \
             "ghcr.io/octivi/hardened-calico:${VERSION}"
+          docker buildx imagetools create \
+            --tag "octivi/hardened-calico:${commit_tag}" \
+            "octivi/hardened-calico:${VERSION}"
 
       - name: Inspect published image
         env:
@@ -138,3 +149,5 @@ jobs:
           set -euo pipefail
           docker buildx imagetools inspect \
             "ghcr.io/octivi/hardened-calico:${VERSION}"
+          docker buildx imagetools inspect \
+            "octivi/hardened-calico:${VERSION}"
