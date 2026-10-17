@@ -41,7 +41,7 @@ For example:
 
 ```text
 k3s-root: v0.15.2-octivi.1
-hardened-calico: v3.32.1-build20260722-octivi.1
+hardened-calico: v3.32.2-build20260909-octivi.1
 ```
 
 ## Prepare the k3s-root release
@@ -61,7 +61,7 @@ Resolve the digest of the selected base image:
 
 ```console
 docker buildx imagetools inspect \
-  rancher/hardened-calico:v3.32.1-build20260722
+  rancher/hardened-calico:v3.32.2-build20260909
 ```
 
 Store the complete `sha256:...` digest in `versions.env`.
@@ -114,16 +114,16 @@ spec:
     calico:
       cniImage:
         repository: ghcr.io/octivi/hardened-calico
-        tag: v3.32.1-build20260722-octivi.1
+        tag: v3.32.2-build20260909-octivi.1
       nodeImage:
         repository: ghcr.io/octivi/hardened-calico
-        tag: v3.32.1-build20260722-octivi.1
+        tag: v3.32.2-build20260909-octivi.1
       flexvolImage:
         repository: ghcr.io/octivi/hardened-calico
-        tag: v3.32.1-build20260722-octivi.1
+        tag: v3.32.2-build20260909-octivi.1
       kubeControllerImage:
         repository: ghcr.io/octivi/hardened-calico
-        tag: v3.32.1-build20260722-octivi.1
+        tag: v3.32.2-build20260909-octivi.1
 ```
 
 Place the manifest at:

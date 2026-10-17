@@ -151,3 +151,19 @@ jobs:
             "ghcr.io/octivi/hardened-calico:${VERSION}"
           docker buildx imagetools inspect \
             "octivi/hardened-calico:${VERSION}"
+
+      - name: Verify nftables in published image
+        env:
+          EXPECTED_VERSION: ${{ env.NFTABLES_VERSION }}
+          VERSION: ${{ env.IMAGE_TAG }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual_version="$(docker run --rm --pull=always \
+            --entrypoint /usr/sbin/nft \
+            "ghcr.io/octivi/hardened-calico:${VERSION}" \
+            --version)"
+          if [[ "${actual_version}" != "nftables v${EXPECTED_VERSION}"* ]]; then
+            echo "Unexpected nftables version: ${actual_version}" >&2
+            exit 1
+          fi
