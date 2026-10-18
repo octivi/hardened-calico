@@ -40,7 +40,7 @@ v<upstream-version>-octivi.<revision>
 For example:
 
 ```text
-k3s-root: v0.15.2-octivi.1
+k3s-root: v0.15.3-octivi.1
 hardened-calico: v3.32.2-build20260909-octivi.1
 ```
 
