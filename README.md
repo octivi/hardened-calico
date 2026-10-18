@@ -40,8 +40,8 @@ v<upstream-version>-octivi.<revision>
 For example:
 
 ```text
-k3s-root: v0.15.3-octivi.1
-hardened-calico: v3.32.2-build20260909-octivi.1
+k3s-root: v0.15.3-octivi.2
+hardened-calico: v3.32.2-build20260909-octivi.2
 ```
 
 ## Prepare the k3s-root release
@@ -114,16 +114,16 @@ spec:
     calico:
       cniImage:
         repository: ghcr.io/octivi/hardened-calico
-        tag: v3.32.2-build20260909-octivi.1
+        tag: v3.32.2-build20260909-octivi.2
       nodeImage:
         repository: ghcr.io/octivi/hardened-calico
-        tag: v3.32.2-build20260909-octivi.1
+        tag: v3.32.2-build20260909-octivi.2
       flexvolImage:
         repository: ghcr.io/octivi/hardened-calico
-        tag: v3.32.2-build20260909-octivi.1
+        tag: v3.32.2-build20260909-octivi.2
       kubeControllerImage:
         repository: ghcr.io/octivi/hardened-calico
-        tag: v3.32.2-build20260909-octivi.1
+        tag: v3.32.2-build20260909-octivi.2
 ```
 
 Place the manifest at:
